@@ -1,0 +1,54 @@
+- pipeline:
+    name: check
+    description: |
+      Newly opened pull requests enter this pipeline to receive an
+      initial verification
+    manager: independent
+    trigger:
+      github:
+        - event: pull_request
+          action:
+            - opened
+            - changed
+            - reopened
+        - event: pull_request
+          action: comment
+          comment: (?i)^\s*recheck\s*$
+        - event: check_run
+    start:
+      github:
+        check: 'in_progress'
+        comment: false
+    success:
+      github:
+        check: 'success'
+    failure:
+      github:
+        check: 'failure'
+        
+ 
+- project:
+    name: ^.*$
+    check:
+      jobs: []
+    gate:
+      jobs: []
+
+- project:
+    name: zuul-config
+    check:
+      jobs:
+        - noop
+    gate:
+      jobs:
+        - noop
+       
+- job:
+    name: base
+    parent: null
+    nodeset:
+      nodes:
+        - name: ubuntu-xenial
+          label: ubuntu-xenial
+
+        
