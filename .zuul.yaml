@@ -1,8 +1,6 @@
 - pipeline:
     name: check
-    description: |
-      Newly opened pull requests enter this pipeline to receive an
-      initial verification
+    post-review: true
     manager: independent
     trigger:
       github:
@@ -10,39 +8,43 @@
           action:
             - opened
             - changed
-            - reopened
         - event: pull_request
-          action: comment
-          comment: (?i)^\s*recheck\s*$
-        - event: check_run
-    start:
-      github:
-        check: 'in_progress'
-        comment: false
+          action:
+            - comment
+          comment:
+            - '^recheck.*$'
     success:
       github:
-        check: 'success'
+        comment: true
+        status: success
     failure:
       github:
-        check: 'failure'
+        comment: true
+        status: failure
+    merge-failure:
+      github:
+        comment: true
+        status: failure
+    start:
+      github:
+        comment: true
+        status: pending
+    disabled:
+      github:
+        comment: true
         
  
 - project:
     name: ^.*$
     check:
       jobs: []
-    gate:
-      jobs: []
 
 - project:
-    name: zuul-config
+    name: devops-zuul/zuul-config
     check:
       jobs:
         - noop
-    gate:
-      jobs:
-        - noop
-       
+   
 - job:
     name: base
     parent: null
